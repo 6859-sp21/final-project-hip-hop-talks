@@ -4,7 +4,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com"> 
         <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;900&display=swap" rel="stylesheet">
         <style>
-            body {overflow: hidden; background-color: white; height: 100vh; width: 100vw; font-family: 'Lato', sans-serif;}
+            body {background-color: white; height: 100vh; width: 100vw; font-family: 'Lato', sans-serif;}
 
             #header {position: absolute; left: 5vw; top: 2.5vh; text-align: left; font-weight: 900;}
             #title {color: black; font-size: max(5vmin, 50px);}
@@ -27,6 +27,7 @@
 
             #vizcontainer {flex-basis: 0; flex-grow: 2.5;}
             #viz {width: 95%; height: 100%; margin: auto; background-color: white; border-radius: 15px; box-shadow: 0 0 25px 5px rgba(0,0,0,.15);}
+            #vizsvg {width: 90%; height: 90%; margin-left: 5%; margin-top: 5%;}
 
             #extrainfo {flex-basis: 0; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;}
 
@@ -53,9 +54,9 @@
             #usagecontainer {flex-basis: 0; flex-grow: 2.5;}
             #wordusage {width: 95%; height: 100%; margin: auto; background-color: white; border-radius: 15px; box-shadow: 0 0 25px 5px rgba(0,0,0,.15);}
             #usageheader {margin-left: 2.5vmin; padding-top: 1.5vmin;}
-            #usagetitle {color: black; font-size: max(5vmin, 50px); font-weight: 900;}
-            #usagesubtitle {color: black; font-size: max(2vmin, 15px); vertical-align: top; font-weight: 400;}
-            #usagechart {margin-left: 1vw;}
+            #usagetitle {color: black; font-size: 5vmin; font-weight: 900;}
+            #usagesubtitle {color: black; font-size: 2vmin; vertical-align: top; font-weight: 400;}
+            #usagechart {margin-left: 2.5%; height: 85%; width: 95%;}
             
             .chartbar {
                 fill: #ccc;
@@ -135,11 +136,12 @@
             const ANIMATION_DURATION = 1000;
 
             // Initialize the svg
-            let width = .5*document.body.clientWidth;
-            let height = .5*document.body.clientHeight;
-            width = height = Math.min(width, height);
+            let width = document.getElementById("viz").offsetWidth;
+            let height = document.getElementById("viz").offsetHeight;
+            // width = height = Math.min(width, height);
             var svg = d3.select("#viz")
                 .append("svg")
+                .attr("id", "vizsvg")
                 .attr("viewBox", [0, 0, width, height]);
 
             var rappers=[]; // in the form [rapper1, rapper2, rapper3 ...]
@@ -192,24 +194,27 @@
                     }).then(() => {
                         for (var i = 0; i < rappers.length; i++) {
                             let rapper = rappers[i];
-                            let minDim = Math.min(height, width);
-                            let diff = (minDim - 80)/9;
-                            let svgWidth = .25*document.body.clientWidth;
-                            let svgHeight = .25*document.body.clientHeight;
-                            let x = 40 + diff*Math.floor(i/10)-20;
-                            let y = 40 + diff*(i%10)-20;
+                            let svgWidth = .9*document.getElementById("viz").offsetWidth;
+                            let svgHeight = .9*document.getElementById("viz").offsetHeight;
+                            // let margin = Math.max(.05*document.getElementById("viz").offsetWidth, .05*document.getElementById("viz").offsetHeight);
+                            let margin = 0;
+                            let minDim = Math.min(svgHeight, svgWidth);
+                            let diff = (minDim - 2*margin)/9;
+                            let size = .75*diff;
+                            let x = margin + diff*Math.floor(i/10) + .125*diff;
+                            let y = margin + diff*(i%10) + .125*diff;
 
                             let circle = svg.append("image")
-                                .attr("x", 40 + diff*Math.floor(i/10)-20)
-                                .attr("y", 40 + diff*(i%10)-20)
-                                .attr("height", diff - 20)
-                                .attr("width", diff - 20)
+                                .attr("x", x)
+                                .attr("y", y)
+                                .attr("height", size)
+                                .attr("width", size)
                                 .attr("xlink:href", rapperPics[rapper]);
                             svg.append("rect")
-                                .attr("x", 40 + diff*Math.floor(i/10)-20)
-                                .attr("y", 40 + diff*(i%10)-20)
-                                .attr("height", diff - 20)
-                                .attr("width", diff - 20)
+                                .attr("x", x)
+                                .attr("y", y-.5*margin)
+                                .attr("height", size)
+                                .attr("width", size)
                                 .attr('opacity', 0)
                                 .on('mouseover', function (d, i) {
                                     circle.transition()
@@ -305,11 +310,12 @@
 
 
             // Chart svg
-            const margin = 60;
-            const chartWidth = .225*document.body.clientWidth;
-            const chartHeight = .35*document.body.clientHeight;
+            let sizeInfo = document.getElementById("wordusage").getBoundingClientRect();
+            const chartWidth = .85*sizeInfo.width;
+            const chartHeight = .7*sizeInfo.height;
+            const margin = Math.max(.05*chartWidth, .05*chartHeight);
             const chartsvg = d3.select("#usagechart");
-            chartsvg.attr("viewBox", [0, 0, width, height]);
+            chartsvg.attr("viewBox", [0, 0, .95*sizeInfo.width, .8*sizeInfo.height]);
             const chart = chartsvg.append('g').attr('transform', `translate(${margin}, ${margin})`);
 
             var zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
