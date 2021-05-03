@@ -235,7 +235,7 @@
                                         .attr('opacity', '1');	
                                 })
                                 .on('click', function(d, i) {
-                                    if (selectedArtist == "") {
+                                    if (selectedArtist != rapper) {
                                         selectedArtist = rapper;
                                         drawArtistLine();
                                     } else {
