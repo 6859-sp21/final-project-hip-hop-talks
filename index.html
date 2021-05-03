@@ -311,12 +311,12 @@
 
             // Chart svg
             let sizeInfo = document.getElementById("wordusage").getBoundingClientRect();
-            const chartWidth = .85*sizeInfo.width;
-            const chartHeight = .7*sizeInfo.height;
-            const margin = Math.max(.05*chartWidth, .05*chartHeight);
+            const chartWidth = .75*sizeInfo.width;
+            const chartHeight = .65*sizeInfo.height;
+            const chartMargin = Math.max(.1*chartWidth, .1*chartHeight);
             const chartsvg = d3.select("#usagechart");
             chartsvg.attr("viewBox", [0, 0, .95*sizeInfo.width, .8*sizeInfo.height]);
-            const chart = chartsvg.append('g').attr('transform', `translate(${margin}, ${margin})`);
+            const chart = chartsvg.append('g').attr('transform', `translate(${chartMargin}, ${chartMargin/2})`);
 
             var zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
             var zAxis = chart.append('g').attr('transform', `translate(${chartWidth}, ${0})`);
@@ -338,6 +338,17 @@
                     .attr('width', xScale.bandwidth())
                 );
             }
+            chartsvg.append('text')
+                .attr('x', -(chartHeight / 2) - chartMargin)
+                .attr('y', chartMargin / 2.4)
+                .attr('transform', 'rotate(-90)')
+                .attr('text-anchor', 'middle')
+                .text('Word Usage (Count)')
+            chartsvg.append('text')
+                .attr('x', chartWidth / 2 + chartMargin)
+                .attr('y', chartHeight + 1.5*chartMargin)
+                .attr('text-anchor', 'middle')
+                .text('Time (Year)')
 
             var artistPath = chart.append('path');
             var artistLine = d3.line()
