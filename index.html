@@ -301,7 +301,7 @@
                     let year = i.toString();
                     yearly_totals[year] = data[year];
                 }
-            }).then(() => {console.log("hellooooo");drawBars("lame")});
+            }).then(() => {console.log("hellooooo");drawBars("hello")});
 
 
             // Chart svg
@@ -318,8 +318,8 @@
             var yScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
             var yAxis = chart.append('g');
             yAxis.call(d3.axisLeft(yScale));
-            var every_year = []; for (var i = 1982; i <= 2021; i++) every_year.push(i);
-            var every_other_year = []; for (var i = 1982; i <= 2021; i += 2) every_other_year.push(i);
+            var every_year = []; for (var i = 1982; i <= 2021; i++) every_year.push(i.toString().substring(2));
+            var every_other_year = []; for (var i = 1982; i <= 2021; i += 2) every_other_year.push(i.toString().substring(2));
             const xScale = d3.scaleBand().range([0, chartWidth]).domain(every_year).padding(0.4);
             const xAxis = chart.append('g').attr('transform', `translate(0, ${chartHeight})`);
             xAxis.call(d3.axisBottom(xScale).tickValues(every_other_year));
