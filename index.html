@@ -120,7 +120,7 @@
                     <div id="usageheader">
                         <span id="usagetitle">Word Usage Over Time</span>
                         <br/>
-                        <span id="usagesubtitle">How has the word "banana" been used over time?</span>
+                        <span id="usagesubtitle">How has the word "hello" been used over time?</span>
                     </div>
                     <svg id="usagechart"></svg>
                 </div>
@@ -204,7 +204,7 @@
                             let x = margin + diff*Math.floor(i/10) + .125*diff;
                             let y = margin + diff*(i%10) + .125*diff;
                             if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
-                            else y += .5(svgHeight - svgWidth);
+                            else y += .5*(svgHeight - svgWidth);
 
                             let circle = svg.append("image")
                                 .attr("x", x)
@@ -308,7 +308,7 @@
                     let year = i.toString();
                     yearly_totals[year] = data[year];
                 }
-            }).then(() => {console.log("hellooooo");drawBars("hello")});
+            }).then(() => {drawBars("hello")});
 
 
             // Chart svg
@@ -318,7 +318,7 @@
             const chartMargin = Math.max(.1*chartWidth, .1*chartHeight);
             const chartsvg = d3.select("#usagechart");
             chartsvg.attr("viewBox", [0, 0, .95*sizeInfo.width, .8*sizeInfo.height]);
-            const chart = chartsvg.append('g').attr('transform', `translate(${chartMargin}, ${chartMargin/2})`);
+            const chart = chartsvg.append('g').attr('transform', `translate(${1.25*chartMargin}, ${chartMargin/2})`);
 
             var zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
             var zAxis = chart.append('g').attr('transform', `translate(${chartWidth}, ${0})`);
@@ -345,10 +345,16 @@
                 .attr('y', chartMargin / 2.4)
                 .attr('transform', 'rotate(-90)')
                 .attr('text-anchor', 'middle')
-                .text('Word Usage (Count)')
+                .text('Word Usage by All Artists (Count)')
+            chartsvg.append('text')
+                .attr('x', chartHeight / 2 + chartMargin)
+                .attr('y', -(chartWidth + 2*chartMargin))
+                .attr('transform', 'rotate(90)')
+                .attr('text-anchor', 'middle')
+                .text('Word Usage by Selected Artist (Count)')
             chartsvg.append('text')
                 .attr('x', chartWidth / 2 + chartMargin)
-                .attr('y', chartHeight + chartMargin + chartMargin/2.4)
+                .attr('y', chartHeight + 1.5*chartMargin)
                 .attr('text-anchor', 'middle')
                 .text('Time (Year)')
 
@@ -433,9 +439,10 @@
             }
 
             function checkWord(word){
-                if (word in rapWords) {
+                let filteredWord = word.replace('\'', '');
+                if (filteredWord in rapWords) {
                     document.getElementById("wordtype").value = word;
-                    currentWord = word;
+                    currentWord = filteredWord;
                     console.log("This is one of the 1500 most popular words");
                     if (showNoWordsText) {
                         // Hide the no words available text
@@ -445,8 +452,8 @@
                             .style("opacity", 0);
                         showNoWordsText = false;
                     }
-                    updateCircleSizes(word);
-                    drawBars(word);
+                    updateCircleSizes(filteredWord);
+                    drawBars(filteredWord);
                 } else {
                     if (!showNoWordsText) {
                         // Reveal the no words available text
@@ -478,17 +485,24 @@
                 let rapperBins = {};
 
                 // Using images
-                let minDim = Math.min(height, width);
-                let diff = (minDim - 80)/9;
+                let svgWidth = .9*document.getElementById("viz").offsetWidth;
+                let svgHeight = .9*document.getElementById("viz").offsetHeight;
+                let minDim = Math.min(svgHeight, svgWidth);
+                let diff = minDim/9;
+
                 for (var i = 0; i < rappers.length; i++) {
                     let rapper = rappers[i];
                     if (rapper != undefined) {
                         let bin = Math.round(rapWords[word][rapper]/binSize);
                         let radius = diff-40 + bin/numBins*40;
+                        let x = diff*Math.floor(i/10) + (diff - radius)/2;
+                        let y = diff*(i%10) + (diff - radius)/2;
+                        if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
+                        else y += .5*(svgHeight - svgWidth);
                         rapperCircles[rapper].transition()
                             .duration(ANIMATION_DURATION)
-                            .attr("x", 40 + diff*Math.floor(i/10)-radius/2)
-                            .attr("y", 40 + diff*(i%10)-radius/2)
+                            .attr("x", x)
+                            .attr("y", y)
                             .attr("height", radius)
                             .attr("width", radius);
                     }
@@ -496,17 +510,24 @@
             }
 
             function resetCircles() {
-                let minDim = Math.min(height, width);
-                let diff = (minDim - 80)/9;
+                let svgWidth = .9*document.getElementById("viz").offsetWidth;
+                let svgHeight = .9*document.getElementById("viz").offsetHeight;
+                let minDim = Math.min(svgHeight, svgWidth);
+                let diff = minDim/9;
+                let size = .75*diff;
                 for (var i = 0; i < rappers.length; i++) {
                     let rapper = rappers[i];
                     if (rapper != undefined) {
+                        let x = diff*Math.floor(i/10) + (diff - size)/2;
+                        let y = diff*(i%10) + (diff - size)/2;
+                        if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
+                        else y += .5*(svgHeight - svgWidth);
                         rapperCircles[rapper].transition()
                             .duration(ANIMATION_DURATION)
-                            .attr("x", 40 + diff*Math.floor(i/10)-20)
-                            .attr("y", 40 + diff*(i%10)-20)
-                            .attr("height", diff - 20)
-                            .attr("width", diff - 20);
+                            .attr("x", x)
+                            .attr("y", y)
+                            .attr("height", size)
+                            .attr("width", size);
                     }
                 }
             }
