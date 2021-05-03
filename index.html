@@ -203,6 +203,8 @@
                             let size = .75*diff;
                             let x = margin + diff*Math.floor(i/10) + .125*diff;
                             let y = margin + diff*(i%10) + .125*diff;
+                            if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
+                            else y += .5(svgHeight - svgWidth);
 
                             let circle = svg.append("image")
                                 .attr("x", x)
