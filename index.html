@@ -8,16 +8,17 @@
 
             #header {position: absolute; left: 5vw; top: 2.5vh; text-align: left; font-weight: 900;}
             #title {color: black; font-size: max(5vmin, 50px);}
-            #subtitle {color: black; font-size: max(2vmin, 15px); vertical-align: top;}
+            #subtitle {font-size: max(2vmin, 15px); vertical-align: top;}
+            #credits {font-weight: 400;}
 
             #interaction {width: 95vw; height: 20vh; position:absolute; left: 2.5vw; top: 5vh;}
 
-            #wordchoice {position: absolute; bottom: 0vh; left: 1vw;}
-            input {height: 3.5vh; width: 53vw; border-radius: 10px; outline: none; border: 0px; background-color: white; padding: 10px 20px; font-size: 35px; margin: 20px 10px 20px 0; color: black;     border-bottom: 10px solid #000;
+            #wordchoice {position: absolute; bottom: 0vh; left: 10vw;}
+            input {height: 3.5vh; width: 40vw; border-radius: 10px; outline: none; border: 0px; background-color: white; padding: 10px 20px; font-size: 35px; margin: 20px 10px 20px 0; color: black;     border-bottom: 10px solid #000;
 }
             #noword {text-align: left; color: black; width: 50vmin; font-size: max(1.5vmin, 10px); }
 
-            #wordsuggest {position: absolute; right: 1vw; bottom: 1.5vh; width: 35vw; height: 17.5vh; margin: auto;}
+            #wordsuggest {position: absolute; right: 1vw; bottom: 1.5vh; width: 35vw; height: 20vh; margin: auto;}
             #suggestheader {margin-left: 2.5vmin; padding-top: 1.5vmin;}
             #suggesttitle {font-size: max(2.25vmin, 15px); font-weight: 900;}
             #suggestsubtitle {font-size: max(1.25vmin, 5px); font-weight: 400;}
@@ -58,7 +59,31 @@
             #usagesubtitle {color: black; font-size: 2vmin; vertical-align: top; font-weight: 400;}
             #usagechart {margin-left: 2.5%; height: 85%; width: 95%;}
             
+            .chartaxis {
+                font-size: max(1.25vmin, 5px);
+            }         
+            .smallchartaxis {
+                font-size: max(1vmin, 4px);
+            }
             .chartbar {
+                fill: #ccc;
+            }
+            .artistchartbar {
+                fill: #1DB954;
+            }
+            .suggestchartbar {
+                fill: #000;
+            }
+            .suggestchartbarartist {
+                fill: #1DB954;
+            }
+            .green {
+                color: #1DB954;
+            }
+            .black {
+                fill: #000;
+            }
+            .grey {
                 fill: #ccc;
             }
             .line {
@@ -70,9 +95,11 @@
     </head>
     <body>
         <div id="header">
-            <span id="title">Hip Hop Talks</span>
+            <span id="title">Hip Hop <span class="green">Talks</span></span>
             <br/>
-            <span id="subtitle">An analysis of the most common words used in Hip Hop.</span>
+            <span id="subtitle" class="green">An analysis of the most common words used in Hip Hop.</span>
+            <br/>
+            <span id="credits">Created by Yodahe Alemu and Joshua Verdejo</span>
         </div>
 
         <div id="interaction">
@@ -84,9 +111,9 @@
                 <div id="suggestheader">
                     <span id="suggesttitle">Next Word Suggestions</span>
                     <br/>
-                    <span id="suggestsubtitle">Based off of word frequencies from selected artists</span>
+                    <span id="suggestsubtitle">Based off of word frequencies from all artists</span>
                 </div>
-
+                <svg id="suggestchart"></svg>
             </div>
         </div>
 
@@ -151,7 +178,10 @@
             var rapperPics={}; // in the form {rapper1: pic1, rapper2: pic2, ...}
             var rapperImages={};
             var rapperCircles={}; // in the form {rapper1: [circle_svg], rapper2: [circle_svg_2], ...}
-            var currentWord="";
+            var rapperOutlines={};
+            var rapperNames = {};
+            var currentWord="hello";
+            var currentArtist = "Diddy";
             var selectedArtist = "";
 
             // Temporal Data
@@ -174,6 +204,7 @@
             d3.csv("rappers.csv", function(data) {
                 let rapper = data["Artists"];
                 rappers.push(rapper);
+                rapperNames[rapper] = data["Actual"];
                 rapperPics[rapper] = data["Pictures"];
             }).then(() => {
                 // Read through all the words data
@@ -192,20 +223,27 @@
                             rapWords[word][rapper] = parseInt(data[rapper]);
                         }
                     }).then(() => {
+                        rappers.sort();
+                        let svgWidth = .9*document.getElementById("viz").offsetWidth;
+                        let svgHeight = .9*document.getElementById("viz").offsetHeight;
+                        let margin = 0;
+                        let minDim = Math.min(svgHeight, svgWidth);
+                        let diff = (minDim - 2*margin)/9;
+                        let size = .75*diff;
                         for (var i = 0; i < rappers.length; i++) {
                             let rapper = rappers[i];
-                            let svgWidth = .9*document.getElementById("viz").offsetWidth;
-                            let svgHeight = .9*document.getElementById("viz").offsetHeight;
-                            // let margin = Math.max(.05*document.getElementById("viz").offsetWidth, .05*document.getElementById("viz").offsetHeight);
-                            let margin = 0;
-                            let minDim = Math.min(svgHeight, svgWidth);
-                            let diff = (minDim - 2*margin)/9;
-                            let size = .75*diff;
-                            let x = margin + diff*Math.floor(i/10) + .125*diff;
-                            let y = margin + diff*(i%10) + .125*diff;
+                            let x = margin + diff*(i%10) + .125*diff;
+                            let y = margin + diff*Math.floor(i/10) + .125*diff;
                             if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
                             else y += .5*(svgHeight - svgWidth);
 
+                            let outline = svg.append("rect")
+                                .attr("x", x - .125*diff)
+                                .attr("y", y - .125*diff)
+                                .attr("height", diff)
+                                .attr("width", diff)
+                                .attr("fill", "#1DB954")
+                                .attr("opacity", 0);
                             let circle = svg.append("image")
                                 .attr("x", x)
                                 .attr("y", y)
@@ -213,28 +251,17 @@
                                 .attr("width", size)
                                 .attr("xlink:href", rapperPics[rapper]);
                             svg.append("rect")
-                                .attr("x", x)
-                                .attr("y", y-.5*margin)
-                                .attr("height", size)
-                                .attr("width", size)
+                                .attr("x", x - .125*diff)
+                                .attr("y", y - .125*diff)
+                                .attr("height", diff)
+                                .attr("width", diff)
                                 .attr('opacity', 0)
                                 .on('mouseover', function (d, i) {
-                                    circle.transition()
-                                        // .duration(ANIMATION_DURATION/2)
-                                        .attr('opacity', '.5');
-                                    let usesHTML = "";
-                                    if (currentWord != "") {
-                                        let numUses = rapWords[currentWord][rapper];
-                                        let usesText = "\" " + numUses + " times.";
-                                        usesHTML += "Has used \"" + currentWord + usesText;
-                                    } else {
-                                        usesHTML += "No valid word currently entered.";
+                                    circle.attr('opacity', '.5');
+                                    if (selectedArtist == "") {
+                                        currentArtist = rapper;
+                                        updateArtistTooltip();
                                     }
-                                    let topWordsText = "</br><span style=\"font-weight: 900;\">Top Words</span></br>\t\""+topWords[rapper][0]+"\" ("+rapWords[topWords[rapper][0]][rapper]+" uses)</br>\t\""+topWords[rapper][1]+"\" ("+rapWords[topWords[rapper][1]][rapper]+" uses)</br>\t\""+topWords[rapper][2]+"\" ("+rapWords[topWords[rapper][2]][rapper]+" uses)";
-                                    usesHTML += topWordsText;
-                                    artistuses.html(usesHTML);
-                                    artistname.html(rapper);
-                                    artistimg.attr('src', rapperPics[rapper]);
                                 })
                                 .on('mouseout', function (d, i) {
                                     circle.transition()
@@ -243,23 +270,33 @@
                                 })
                                 .on('click', function(d, i) {
                                     if (selectedArtist != rapper) {
+                                        if (selectedArtist != "") {
+                                            rapperOutlines[selectedArtist].transition()
+                                                .duration(ANIMATION_DURATION/2)
+                                                .attr('opacity', 0);
+                                        }
+                                        rapperOutlines[rapper].transition()
+                                            .duration(ANIMATION_DURATION/2)
+                                            .attr('opacity', 1);
                                         selectedArtist = rapper;
-                                        drawArtistLine();
+                                        currentArtist = rapper;
+                                        selectArtist();
                                     } else {
+                                        rapperOutlines[rapper].transition()
+                                            .duration(ANIMATION_DURATION/2)
+                                            .attr('opacity', 0);
                                         selectedArtist = "";
-                                        resetArtistLine();
+                                        deselectArtist();
                                     }
-                                    
                                 });
 
                             rapperCircles[rapper] = circle;
+                            rapperOutlines[rapper] = outline;
                         }
 
-                        let firstrapper = rappers[0];
-                        let firstTopWordsText = "</br><span style=\"font-weight: 900;\">Top Words</span></br>\t\""+topWords[firstrapper][0]+"\" ("+rapWords[topWords[firstrapper][0]][firstrapper]+" uses)</br>\t\""+topWords[firstrapper][1]+"\" ("+rapWords[topWords[firstrapper][1]][firstrapper]+" uses)</br>\t\""+topWords[firstrapper][2]+"\" ("+rapWords[topWords[firstrapper][2]][firstrapper]+" uses)";
-                        artistuses.html("No valid word currently entered." + firstTopWordsText);
-                        artistname.html(firstrapper);
-                        artistimg.attr('src', rapperPics[rappers[0]]);
+                        updateArtistTooltip();
+
+                        checkWord(currentWord);
 
                         // Generate the word sums list
                         let wordsums = {}
@@ -295,6 +332,136 @@
                 });
             });
 
+            function updateArtistTooltip() {
+                console.log("Updating artist tooltip for " + currentArtist);
+                let usesHTML = "";
+                if (currentWord != "") {
+                    let numUses = rapWords[currentWord][currentArtist];
+                    let usesText = "\" " + numUses + " times.";
+                    usesHTML += "Has used \"" + currentWord + usesText;
+                } else {
+                    usesHTML += "No valid word currently entered.";
+                }
+                let topWordsText = "</br><span style=\"font-weight: 900;\">Top Words</span></br>\t\""+topWords[currentArtist][0]+"\" ("+rapWords[topWords[currentArtist][0]][currentArtist]+" uses)</br>\t\""+topWords[currentArtist][1]+"\" ("+rapWords[topWords[currentArtist][1]][currentArtist]+" uses)</br>\t\""+topWords[currentArtist][2]+"\" ("+rapWords[topWords[currentArtist][2]][currentArtist]+" uses)";
+                usesHTML += topWordsText;
+                artistuses.html(usesHTML);
+                artistname.html(rapperNames[currentArtist]);
+                artistimg.attr('src', rapperPics[currentArtist]);
+            }
+
+            // THIS IS THE WORD SUGGESTION SECTION
+
+            // Global Pairings Variables
+            var wordArtistPairings = {};
+            var wordTotalPairings = {};
+
+            // Read through the suggestion data
+            d3.json("artistWordPairings.json").then((data) => {
+                wordArtistPairings = data;
+            });
+
+            d3.json("totalWordPairings.json").then((data) => {
+                wordTotalPairings = data;
+                UpdateSuggestions();
+            });
+
+            // Generate the chart svg
+            let suggestSizeInfo = document.getElementById("wordsuggest").getBoundingClientRect();
+            const suggestChartWidth = .75*suggestSizeInfo.width;
+            const suggestChartHeight = .55*suggestSizeInfo.height;
+            const suggestChartMargin = Math.max(.1*suggestSizeInfo.width, .05*suggestSizeInfo.height);
+            const suggestChartsvg = d3.select("#suggestchart");
+            suggestChartsvg.attr("viewBox", [0, 0, suggestSizeInfo.width, suggestSizeInfo.height]);
+            const suggestChart = suggestChartsvg.append('g').attr('transform', `translate(${suggestChartMargin/2}, ${suggestChartMargin/5})`);
+
+            var yScaleSuggest = d3.scaleLinear().range([suggestChartHeight, 0]).domain([0, 1]);
+            var yAxisSuggest = suggestChart.append('g').attr('class', 'smallchartaxis');
+            yAxisSuggest.call(d3.axisLeft(yScaleSuggest));
+            const xScaleSuggest = d3.scaleBand().range([0, suggestChartWidth]).domain([0,1,2,3,4]).padding(0.4);
+            const xAxisSuggest = suggestChart.append('g').attr('transform', `translate(0, ${suggestChartHeight})`).attr('class', 'chartaxis');
+            xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
+
+            // Suggestion Chart Bars
+            var suggestChartBars = [];
+            for (var i = 0; i < 5; i++) {
+                suggestChartBars.push(suggestChart.append('rect')
+                    .attr('class', 'suggestchartbar')
+                    .attr('x', xScaleSuggest(i))
+                    .attr('y', yScaleSuggest(0))
+                    .attr('width', xScaleSuggest.bandwidth())
+                    .attr('height', suggestChartHeight - yScaleSuggest(0))
+                );
+            }
+
+            // Updates the suggestions box to show word pairings of the input 'word'
+            function UpdateSuggestions() {
+                d3.select("#suggestsubtitle").html("Based off of word frequencies from all artists");
+                let pairings = Object.keys(wordTotalPairings[currentWord]);
+                xScaleSuggest.domain(pairings).padding(0.4);
+                xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
+                
+                let pairingValues = Object.values(wordTotalPairings[currentWord]);
+                for (var index = 0; index < 5; index++) {
+                    if (index < pairingValues.length) {
+                        suggestChartBars[index].transition()
+                            .duration(ANIMATION_DURATION)
+                            .attr('class', 'suggestchartbar')
+                            .attr('x', xScaleSuggest(pairings[index]))
+                            .attr('y', yScaleSuggest(pairingValues[index]))
+                            .attr('width', xScaleSuggest.bandwidth())
+                            .attr('height', suggestChartHeight - yScaleSuggest(pairingValues[index]))
+                    } else {
+                        suggestChartBars[index].transition()
+                            .duration(ANIMATION_DURATION)
+                            .attr('y', yScaleSuggest(0))
+                            .attr('height', suggestChartHeight - yScaleSuggest(0))
+                    }
+                }
+            }
+
+            function UpdateArtistSuggestions() {
+                d3.select("#suggestsubtitle").html("Based off of word frequencies from <span class=\"green\">" + selectedArtist + "</span>");
+                if (!(selectedArtist in wordArtistPairings[currentWord])) {
+                    xScaleSuggest.domain([]);
+                    xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
+                    for (var i = 0; i < 5; i++) {
+                        suggestChartBars[i].transition()
+                            .duration(ANIMATION_DURATION)
+                            .attr('class', 'suggestchartbarartist')
+                            .attr('y', yScaleSuggest(0))
+                            .attr('height', suggestChartHeight - yScaleSuggest(0));
+                    }
+                    return;
+                }
+
+                let pairings = Object.keys(wordArtistPairings[currentWord][selectedArtist]);
+                console.log(pairings);
+                xScaleSuggest.domain(pairings).padding(0.4);
+                xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
+                
+                let pairingValues = Object.values(wordArtistPairings[currentWord][selectedArtist]);
+                for (var index = 0; index < 5; index++) {
+                    if (index < pairingValues.length) {
+                        suggestChartBars[index].transition()
+                            .duration(ANIMATION_DURATION)
+                            .attr('class', 'suggestchartbarartist')
+                            .attr('x', xScaleSuggest(pairings[index]))
+                            .attr('y', yScaleSuggest(pairingValues[index]))
+                            .attr('width', xScaleSuggest.bandwidth())
+                            .attr('height', suggestChartHeight - yScaleSuggest(pairingValues[index]))
+                    } else {
+                        suggestChartBars[index].transition()
+                            .duration(ANIMATION_DURATION)
+                            .attr('class', 'suggestchartbarartist')
+                            .attr('y', yScaleSuggest(0))
+                            .attr('height', suggestChartHeight - yScaleSuggest(0))
+                    }
+                }
+            }
+
+
+
+            // THIS IS THE TEMPORAL DATA SECTION
             // Read through the temporal data
             d3.json("temporalwords.json").then((data) => {
                 for (var i = 1982; i <= 2021; i++) {
@@ -308,50 +475,69 @@
                     let year = i.toString();
                     yearly_totals[year] = data[year];
                 }
-            }).then(() => {drawBars("hello")});
+            }).then(() => {drawBars(currentWord)});
 
-
-            // Chart svg
+            // Generate the chart svg
             let sizeInfo = document.getElementById("wordusage").getBoundingClientRect();
-            const chartWidth = .75*sizeInfo.width;
+            const chartWidth = .8*sizeInfo.width;
             const chartHeight = .65*sizeInfo.height;
             const chartMargin = Math.max(.1*chartWidth, .1*chartHeight);
             const chartsvg = d3.select("#usagechart");
             chartsvg.attr("viewBox", [0, 0, .95*sizeInfo.width, .8*sizeInfo.height]);
             const chart = chartsvg.append('g').attr('transform', `translate(${1.25*chartMargin}, ${chartMargin/2})`);
 
-            var zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
-            var zAxis = chart.append('g').attr('transform', `translate(${chartWidth}, ${0})`);
-            zAxis.call(d3.axisRight(zScale));
+            // var zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
+            // var zAxis = chart.append('g').attr('transform', `translate(${chartWidth}, ${0})`);
+            // zAxis.call(d3.axisRight(zScale));
             var yScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, 100]);
-            var yAxis = chart.append('g');
+            var yAxis = chart.append('g').attr('class', 'chartaxis');
             yAxis.call(d3.axisLeft(yScale));
             var every_year = []; for (var i = 1982; i <= 2021; i++) every_year.push(i);
             var every_other_year = []; for (var i = 1982; i <= 2021; i += 2) every_other_year.push(i);
             const xScale = d3.scaleBand().range([0, chartWidth]).domain(every_year).padding(0.4);
-            const xAxis = chart.append('g').attr('transform', `translate(0, ${chartHeight})`);
+            const xAxis = chart.append('g').attr('transform', `translate(0, ${chartHeight})`).attr('class', 'chartaxis');
             xAxis.call(d3.axisBottom(xScale).tickValues(every_other_year)).selectAll("text").style("text-anchor", "end").attr("dx", "-.8em").attr("dy", ".15em").attr("transform", "rotate(-65)");;
             console.log(xAxis);
+
+            // Total Chart Bars (All Artists)
             var chartBars = [];
             for (var i = 1982; i <= 2021; i++) {
                 chartBars.push(chart.append('rect')
                     .attr('class', 'chartbar')
                     .attr('x', xScale(i))
+                    .attr('y', yScale(0))
                     .attr('width', xScale.bandwidth())
+                    .attr('height', chartHeight - yScale(0))
                 );
             }
+            // resetBars();
+
+            // Artist Chart Bars (Selected Artist ONLY)
+            var artistChartBars = [];
+            for (var i = 1982; i <= 2021; i++) {
+                artistChartBars.push(chart.append('rect')
+                    .attr('class', 'artistchartbar')
+                    .attr('x', xScale(i))
+                    .attr('y', yScale(0))
+                    .attr('width', xScale.bandwidth())
+                    .attr('height', chartHeight - yScale(0))
+                );
+            }
+            // resetArtistBars();
+
+            // Chart Labels
             chartsvg.append('text')
                 .attr('x', -(chartHeight / 2) - chartMargin)
                 .attr('y', chartMargin / 2.4)
                 .attr('transform', 'rotate(-90)')
                 .attr('text-anchor', 'middle')
-                .text('Word Usage by All Artists (Count)')
-            chartsvg.append('text')
-                .attr('x', chartHeight / 2 + chartMargin)
-                .attr('y', -(chartWidth + 2*chartMargin))
-                .attr('transform', 'rotate(90)')
-                .attr('text-anchor', 'middle')
-                .text('Word Usage by Selected Artist (Count)')
+                .text('Word Usage by Artists (Count)')
+            // chartsvg.append('text')
+            //     .attr('x', chartHeight / 2 + chartMargin)
+            //     .attr('y', -(chartWidth + 2*chartMargin))
+            //     .attr('transform', 'rotate(90)')
+            //     .attr('text-anchor', 'middle')
+            //     .text('Word Usage by Selected Artist (Count)')
             chartsvg.append('text')
                 .attr('x', chartWidth / 2 + chartMargin)
                 .attr('y', chartHeight + 1.5*chartMargin)
@@ -362,17 +548,17 @@
             var artistLine = d3.line()
                 .x(function(d) {console.log(d); return xScale(d.year); })
                 .y(function(d) { return zScale(d.count); });
-            resetArtistLine();
+            //resetArtistLine();
 
             const usagesubtitle = d3.select("#usagesubtitle");
 
-            function drawBars(word) {
+            function drawBars() {
                 word_year_totals = []
                 var maxCount = 0;
                 for (var i = 1982; i <= 2021; i++) {
                     let year = i.toString();
-                    if (word in yearly_totals[year]) {
-                        let count = yearly_totals[year][word];
+                    if (currentWord in yearly_totals[year]) {
+                        let count = yearly_totals[year][currentWord];
                         word_year_totals.push(count);
                         if (count > maxCount) maxCount = count;
                     } else word_year_totals.push(0);
@@ -388,61 +574,120 @@
                         .attr('height', chartHeight - yScale(word_year_totals[index]))
                 }
 
-                if (selectedArtist != "") drawArtistLine(word);
+                if (selectedArtist != "") {
+                    drawArtistBars();
+                }
                 
                 // Update Chart Subtitle
-                usagesubtitle.html("How has the word \"" + word + "\" been used over time?");
+                usagesubtitle.html("How has the word \"" + currentWord + "\" been used over time?");
             }
 
-            function drawArtistLine(word = currentWord) {
-                console.log("Drawing artist line for " + selectedArtist);
-                var maxArtistCount = 0;
+            function resetBars() {
+                console.log("Resetting bars");
+                let zero_line = [];
+                for (var i = 1982; i <= 2021; i++) zero_line.push(0);
+                for (index in zero_line) {
+                    chartBars[index].transition()
+                        .duration(ANIMATION_DURATION)
+                        .attr('y', yScale(0))
+                        .attr('height', chartHeight - yScale(0))
+                }
+            }
+
+            function drawArtistBars() {
+                console.log("Drawing artist bar for " + selectedArtist);
                 artist_year_counts = [];
                 for (var i = 1982; i <= 2021; i++) {
                     let year = i.toString();
                     let count = 0;
-                    if (selectedArtist in yearly_artist_counts[year] && word in yearly_artist_counts[year][selectedArtist]) {
-                        count = yearly_artist_counts[year][selectedArtist][word];
-                        if (count > maxArtistCount) maxArtistCount = count;
+                    if (selectedArtist in yearly_artist_counts[year]) {
+                        if (currentWord in yearly_artist_counts[year][selectedArtist]) {
+                            count = yearly_artist_counts[year][selectedArtist][currentWord];
+                        }
                     }
-                    artist_year_counts.push({year: i, count: count});
+                    console.log(count);
+                    artist_year_counts.push(count);
                 }
-                zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, maxArtistCount + Math.round(.1*maxArtistCount)]);
-                // zAxis.attr('transform', `translate(${chartWidth}, ${0})`);
-                zAxis.call(d3.axisRight(zScale));
 
-                artistPath.data([artist_year_counts])
-                    .attr("class", "line")
-                    .transition()
-                    .duration(ANIMATION_DURATION)
-                    .attr('d', artistLine);
+                for (index in artist_year_counts) {
+                    artistChartBars[index].transition()
+                        .duration(ANIMATION_DURATION)
+                        .attr('y', yScale(artist_year_counts[index]))
+                        .attr('height', chartHeight - yScale(artist_year_counts[index]))
+                }
             }
 
-            function resetArtistLine() {
+            function resetArtistBars() {
+                console.log("Resetting artist bars");
                 let zero_line = [];
-                for (var i = 1982; i <= 2021; i++) {
-                    let year = i.toString();
-                    zero_line.push({year: i, count: 0});
+                for (var i = 1982; i <= 2021; i++) zero_line.push(0);
+                for (index in zero_line) {
+                    artistChartBars[index].transition()
+                        .duration(ANIMATION_DURATION)
+                        .attr('y', yScale(0))
+                        .attr('height', chartHeight - yScale(0))
                 }
-                artistPath.data([zero_line])
-                    .attr("class", "line")
-                    .transition()
-                    .duration(ANIMATION_DURATION)
-                    .attr('d', artistLine);
             }
+
+            // function drawArtistLine(word = currentWord) {
+            //     console.log("Drawing artist line for " + selectedArtist);
+            //     var maxArtistCount = 0;
+            //     artist_year_counts = [];
+            //     for (var i = 1982; i <= 2021; i++) {
+            //         let year = i.toString();
+            //         let count = 0;
+            //         if (selectedArtist in yearly_artist_counts[year] && word in yearly_artist_counts[year][selectedArtist]) {
+            //             count = yearly_artist_counts[year][selectedArtist][word];
+            //             if (count > maxArtistCount) maxArtistCount = count;
+            //         }
+            //         artist_year_counts.push({year: i, count: count});
+            //     }
+            //     zScale = d3.scaleLinear().range([chartHeight, 0]).domain([0, maxArtistCount + Math.round(.1*maxArtistCount)]);
+            //     // zAxis.attr('transform', `translate(${chartWidth}, ${0})`);
+            //     zAxis.call(d3.axisRight(zScale));
+
+            //     artistPath.data([artist_year_counts])
+            //         .attr("class", "line")
+            //         .transition()
+            //         .duration(ANIMATION_DURATION)
+            //         .attr('d', artistLine);
+            // }
+
+            // function resetArtistLine() {
+            //     let zero_line = [];
+            //     for (var i = 1982; i <= 2021; i++) {
+            //         let year = i.toString();
+            //         zero_line.push({year: i, count: 0});
+            //     }
+            //     artistPath.data([zero_line])
+            //         .attr("class", "line")
+            //         .transition()
+            //         .duration(ANIMATION_DURATION)
+            //         .attr('d', artistLine);
+            // }
 
             // Handle typing from user
             var showNoWordsText = false;
             function handleType(event){
-                let word = document.getElementById("wordtype").value.toLowerCase();
-                checkWord(word);
+                checkWord(document.getElementById("wordtype").value);
             }
 
             function checkWord(word){
-                let filteredWord = word.replace('\'', '');
-                if (filteredWord in rapWords) {
-                    document.getElementById("wordtype").value = word;
-                    currentWord = filteredWord;
+                let lowerCase = word.toLowerCase();
+                document.getElementById("wordtype").value = lowerCase;
+                let filtered = lowerCase.replace('\'', '');
+                let words = filtered.split(" ");
+                let lastWord = words[words.length - 1];
+                console.log(words);
+                for (var i = words.length - 1; i >= 0; i--) {
+                    if (words[i] != "") {
+                        lastWord = words[i];
+                        break;
+                    }
+                }
+
+                if (lastWord in rapWords) {
+                    currentWord = lastWord;
                     console.log("This is one of the 1500 most popular words");
                     if (showNoWordsText) {
                         // Hide the no words available text
@@ -452,8 +697,11 @@
                             .style("opacity", 0);
                         showNoWordsText = false;
                     }
-                    updateCircleSizes(filteredWord);
-                    drawBars(filteredWord);
+                    updateCircleSizes(lastWord);
+                    updateArtistTooltip();
+                    drawBars(lastWord);
+                    if (selectedArtist != "") UpdateArtistSuggestions();
+                    else UpdateSuggestions();
                 } else {
                     if (!showNoWordsText) {
                         // Reveal the no words available text
@@ -466,6 +714,14 @@
                         }
                         // Reset all the circles
                         resetCircles();
+                    } else {
+                        if (word == "") {
+                            showNoWordsText = false;
+                            d3.select("#noword")
+                                .transition()
+                                .duration(ANIMATION_DURATION)
+                                .style("opacity", 0);
+                        }
                     }
                 }
             }
@@ -488,38 +744,15 @@
                 let svgWidth = .9*document.getElementById("viz").offsetWidth;
                 let svgHeight = .9*document.getElementById("viz").offsetHeight;
                 let minDim = Math.min(svgHeight, svgWidth);
-                let diff = minDim/9;
-
+                let margin = 0;
+                let diff = (minDim - 2*margin)/9;
                 for (var i = 0; i < rappers.length; i++) {
                     let rapper = rappers[i];
                     if (rapper != undefined) {
                         let bin = Math.round(rapWords[word][rapper]/binSize);
-                        let radius = diff-40 + bin/numBins*40;
-                        let x = diff*Math.floor(i/10) + (diff - radius)/2;
-                        let y = diff*(i%10) + (diff - radius)/2;
-                        if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
-                        else y += .5*(svgHeight - svgWidth);
-                        rapperCircles[rapper].transition()
-                            .duration(ANIMATION_DURATION)
-                            .attr("x", x)
-                            .attr("y", y)
-                            .attr("height", radius)
-                            .attr("width", radius);
-                    }
-                }
-            }
-
-            function resetCircles() {
-                let svgWidth = .9*document.getElementById("viz").offsetWidth;
-                let svgHeight = .9*document.getElementById("viz").offsetHeight;
-                let minDim = Math.min(svgHeight, svgWidth);
-                let diff = minDim/9;
-                let size = .75*diff;
-                for (var i = 0; i < rappers.length; i++) {
-                    let rapper = rappers[i];
-                    if (rapper != undefined) {
-                        let x = diff*Math.floor(i/10) + (diff - size)/2;
-                        let y = diff*(i%10) + (diff - size)/2;
+                        let size = (.4 + (bin/numBins*.5)) * diff;
+                        let x = margin + diff*(i%10) + (diff - size)/2;
+                        let y = margin + diff*Math.floor(i/10) + (diff - size)/2;
                         if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
                         else y += .5*(svgHeight - svgWidth);
                         rapperCircles[rapper].transition()
@@ -530,6 +763,49 @@
                             .attr("width", size);
                     }
                 }
+            }
+
+            function resetCircles() {
+                let svgWidth = .9*document.getElementById("viz").offsetWidth;
+                let svgHeight = .9*document.getElementById("viz").offsetHeight;
+                let minDim = Math.min(svgHeight, svgWidth);
+                let margin = 0;
+                let diff = (minDim - 2*margin)/9;
+                let size = .75*diff;
+                for (var i = 0; i < rappers.length; i++) {
+                    let rapper = rappers[i];
+                    if (rapper != undefined) {
+                        let x = margin + diff*(i%10) + .125*diff;
+                        let y = margin + diff*Math.floor(i/10) + .125*diff;
+                        if (svgWidth > svgHeight) x += .5*(svgWidth - svgHeight);
+                        else y += .5*(svgHeight - svgWidth);
+                        rapperCircles[rapper].transition()
+                            .duration(ANIMATION_DURATION)
+                            .attr("x", x)
+                            .attr("y", y)
+                            .attr("height", size)
+                            .attr("width", size);
+                    }
+                }
+            }
+
+            function artistWordUsage() {
+
+            }
+
+            function totalWordUsage() {
+
+            }
+
+            function selectArtist() {
+                updateArtistTooltip();
+                drawArtistBars();
+                UpdateArtistSuggestions();
+            }
+
+            function deselectArtist() {
+                resetArtistBars();
+                UpdateSuggestions();
             }
         </script>
     </body>
