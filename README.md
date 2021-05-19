@@ -3,7 +3,7 @@ final-project-hip-hop-talks created by **Yodahe Alemu** and **Joshua Verdejo**
 
 [Link to our visualization.](https://6859-sp21.github.io/final-project-hip-hop-talks/ "Final Project Visualization")
 
-[Our rationale for our A4 submission,](https://github.com/6859-sp21/a4-hiphoptalks "A4 Rationale") which our final project was built on top of.
+[Our rationale for our A4 submission](https://github.com/6859-sp21/a4-hiphoptalks "A4 Rationale") which our final project was built on top of.
 
 **A breakdown of how we split up the work.**
 Similar to our work breakdown for A4, we split the work such that Yodahe focused on the website while Josh focused on the datasets.
