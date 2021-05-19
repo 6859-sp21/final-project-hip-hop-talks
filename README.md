@@ -1,5 +1,5 @@
-# final-project-hip-hop-talks
-final-project-hip-hop-talks created by **Yodahe Alemu** and **Joshua Verdejo**
+# Hip Hop Talks
+A visualization on the use of language in Hip Hop, created by **Yodahe Alemu** and **Joshua Verdejo**
 
 [Link to our visualization.](https://6859-sp21.github.io/final-project-hip-hop-talks/ "Final Project Visualization")
 
