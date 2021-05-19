@@ -617,6 +617,7 @@
                 var maxCount = 0;
                 for (var i = 1982; i <= 2021; i++) {
                     let year = i.toString();
+                    console.log("drawing the bar for " + year);
                     if (currentWord in yearly_totals[year]) {
                         let count = yearly_totals[year][currentWord];
                         word_year_totals.push(count);
