@@ -36,6 +36,7 @@ for artist in artist_words:
 print(top_words)
 with open("topwords.csv", "w") as file:
     writer = csv.writer(file)
+    writer.writerow(["Artists","Word1","Word2","Word3"])
     for artist in top_words:
         writer.writerow([artist] + top_words[artist])
 

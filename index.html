@@ -19,7 +19,7 @@
             #noword {text-align: left; color: black; width: 50vmin; font-size: max(1.5vmin, 10px); }
 
             #wordsuggest {position: absolute; right: 1vw; bottom: 1.5vh; width: 35vw; height: 20vh; margin: auto;}
-            #suggestheader {margin-left: 2.5vmin; padding-top: 1.5vmin;}
+            #suggestheader {margin-left: 2.5vmin; padding-top: 1.5vmin; height: 5vh}
             #suggesttitle {font-size: max(2.25vmin, 15px); font-weight: 900;}
             #suggestsubtitle {font-size: max(1.25vmin, 5px); font-weight: 400;}
 
@@ -91,6 +91,31 @@
                 stroke: #000;
                 stroke-width: 5px;
             }
+
+            .greytooltip {
+                position: absolute;
+                background-color: #ccc;
+                color: white;
+                font-weight: 400;
+                padding: 10px;
+                border-radius: 10px;
+            }
+            .blacktooltip {
+                position: absolute;
+                background-color: #000;
+                color: white;
+                font-weight: 400;
+                padding: 10px;
+                border-radius: 10px;
+            }
+            .greentooltip {
+                position: absolute;
+                background-color: #1DB954;
+                color: white;
+                font-weight: 400;
+                padding: 10px;
+                border-radius: 10px;
+            }
         </style>
     </head>
     <body>
@@ -104,7 +129,7 @@
 
         <div id="interaction">
             <div id="wordchoice" name="wordchoice" onkeyup="handleType()" onsubmit="()=>{e.preventDefault()}">
-                <div id="noword">This word is not one of the 1500 most used words in Hip Hop.</div>
+                <div id="noword">This word is not one of the most used words in Hip Hop.</div>
                 <input type="text" id="wordtype" placeholder="Type out a word&hellip;">
             </div>
             <div id="wordsuggest">
@@ -161,6 +186,7 @@
         <script src="https://d3js.org/d3.v6.min.js"></script>
         <script>
             const ANIMATION_DURATION = 1000;
+            const VOCAB_WORD_COUNT_MAX = 10000;
 
             // Initialize the svg
             let width = document.getElementById("viz").offsetWidth;
@@ -210,6 +236,7 @@
                 // Read through all the words data
                 d3.csv("topwords.csv", function(data) {
                     let rapper = data["Artists"];
+                    console.log(rapper);
                     let word1 = data["Word1"];
                     let word2 = data["Word2"];
                     let word3 = data["Word3"];
@@ -308,7 +335,7 @@
                             let word = data["Words"];
                             let count = data["Count"];
                             wordsums[word] = count;
-                            vocabwords.push(word);
+                            if (count < VOCAB_WORD_COUNT_MAX) vocabwords.push(word);
                         }).then(() => {
                             vocabwords.sort((a,b) => {return wordsums[b] - wordsums[a]});
                             for (var i = 0; i < vocabwords.length; i++) {
@@ -349,8 +376,14 @@
                 artistimg.attr('src', rapperPics[currentArtist]);
             }
 
-            // THIS IS THE WORD SUGGESTION SECTION
+            // This tooltip is used by ALL THE CHARTS
+            var tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "greentooltip")
+                .style("visibility", "hidden")
+                .text("Tooltip");
 
+            // THIS IS THE WORD SUGGESTION SECTION
             // Global Pairings Variables
             var wordArtistPairings = {};
             var wordTotalPairings = {};
@@ -372,11 +405,11 @@
             const suggestChartMargin = Math.max(.1*suggestSizeInfo.width, .05*suggestSizeInfo.height);
             const suggestChartsvg = d3.select("#suggestchart");
             suggestChartsvg.attr("viewBox", [0, 0, suggestSizeInfo.width, suggestSizeInfo.height]);
-            const suggestChart = suggestChartsvg.append('g').attr('transform', `translate(${suggestChartMargin/2}, ${suggestChartMargin/5})`);
+            const suggestChart = suggestChartsvg.append('g').attr('transform', `translate(${suggestChartMargin/1.5}, ${suggestChartMargin/5})`);
 
             var yScaleSuggest = d3.scaleLinear().range([suggestChartHeight, 0]).domain([0, 1]);
             var yAxisSuggest = suggestChart.append('g').attr('class', 'smallchartaxis');
-            yAxisSuggest.call(d3.axisLeft(yScaleSuggest));
+            yAxisSuggest.call(d3.axisLeft(yScaleSuggest).tickValues([0,.2,.4, .6,.8,1]));
             const xScaleSuggest = d3.scaleBand().range([0, suggestChartWidth]).domain([0,1,2,3,4]).padding(0.4);
             const xAxisSuggest = suggestChart.append('g').attr('transform', `translate(0, ${suggestChartHeight})`).attr('class', 'chartaxis');
             xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
@@ -390,6 +423,9 @@
                     .attr('y', yScaleSuggest(0))
                     .attr('width', xScaleSuggest.bandwidth())
                     .attr('height', suggestChartHeight - yScaleSuggest(0))
+                    .on("mouseover", function(){return tooltip.style("visibility", "visible");})
+                    .on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").style("left",(event.pageX-50)+"px").text("Tooltip");})
+                    .on("mouseout", function(){return tooltip.style("visibility", "hidden");})
                 );
             }
 
@@ -397,10 +433,16 @@
             function UpdateSuggestions() {
                 d3.select("#suggestsubtitle").html("Based off of word frequencies from all artists");
                 let pairings = Object.keys(wordTotalPairings[currentWord]);
+                let pairingValues = Object.values(wordTotalPairings[currentWord]);
+                
+                let max = Math.max.apply(Math, pairingValues);
+                let yScaleMax = Math.min(max + .1, 1);
+                yScaleSuggest = d3.scaleLinear().range([suggestChartHeight, 0]).domain([0, yScaleMax]);
+                yAxisSuggest.call(d3.axisLeft(yScaleSuggest).tickValues([0,.2*yScaleMax,.4*yScaleMax, .6*yScaleMax,.8*yScaleMax,yScaleMax]));
+
                 xScaleSuggest.domain(pairings).padding(0.4);
                 xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
                 
-                let pairingValues = Object.values(wordTotalPairings[currentWord]);
                 for (var index = 0; index < 5; index++) {
                     if (index < pairingValues.length) {
                         suggestChartBars[index].transition()
@@ -410,11 +452,14 @@
                             .attr('y', yScaleSuggest(pairingValues[index]))
                             .attr('width', xScaleSuggest.bandwidth())
                             .attr('height', suggestChartHeight - yScaleSuggest(pairingValues[index]))
+                        let frequency = (pairingValues[index]).toFixed(2);
+                        suggestChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "blacktooltip").style("left",(event.pageX-50)+"px").text("Frequency: " + frequency);})
                     } else {
                         suggestChartBars[index].transition()
                             .duration(ANIMATION_DURATION)
                             .attr('y', yScaleSuggest(0))
                             .attr('height', suggestChartHeight - yScaleSuggest(0))
+                        suggestChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "blacktooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
                     }
                 }
             }
@@ -430,16 +475,22 @@
                             .attr('class', 'suggestchartbarartist')
                             .attr('y', yScaleSuggest(0))
                             .attr('height', suggestChartHeight - yScaleSuggest(0));
+                        suggestChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "blacktooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
                     }
                     return;
                 }
 
                 let pairings = Object.keys(wordArtistPairings[currentWord][selectedArtist]);
-                console.log(pairings);
+                let pairingValues = Object.values(wordArtistPairings[currentWord][selectedArtist]);
+                
+                let max = Math.max.apply(Math, pairingValues);
+                let yScaleMax = Math.min(max + .1, 1);
+                yScaleSuggest = d3.scaleLinear().range([suggestChartHeight, 0]).domain([0, yScaleMax]);
+                yAxisSuggest.call(d3.axisLeft(yScaleSuggest).tickValues([0,.2*yScaleMax,.4*yScaleMax, .6*yScaleMax,.8*yScaleMax,yScaleMax]));
+                
                 xScaleSuggest.domain(pairings).padding(0.4);
                 xAxisSuggest.call(d3.axisBottom(xScaleSuggest));
                 
-                let pairingValues = Object.values(wordArtistPairings[currentWord][selectedArtist]);
                 for (var index = 0; index < 5; index++) {
                     if (index < pairingValues.length) {
                         suggestChartBars[index].transition()
@@ -449,12 +500,15 @@
                             .attr('y', yScaleSuggest(pairingValues[index]))
                             .attr('width', xScaleSuggest.bandwidth())
                             .attr('height', suggestChartHeight - yScaleSuggest(pairingValues[index]))
+                        let frequency = (pairingValues[index]).toFixed(2);
+                        suggestChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "greentooltip").style("left",(event.pageX-50)+"px").text("Frequency: " + frequency);})
                     } else {
                         suggestChartBars[index].transition()
                             .duration(ANIMATION_DURATION)
                             .attr('class', 'suggestchartbarartist')
                             .attr('y', yScaleSuggest(0))
                             .attr('height', suggestChartHeight - yScaleSuggest(0))
+                        suggestChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "greentooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
                     }
                 }
             }
@@ -508,6 +562,9 @@
                     .attr('y', yScale(0))
                     .attr('width', xScale.bandwidth())
                     .attr('height', chartHeight - yScale(0))
+                    .on("mouseover", function(){return tooltip.style("visibility", "visible");})
+                    .on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "blacktooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
+                    .on("mouseout", function(){return tooltip.style("visibility", "hidden");})
                 );
             }
             // resetBars();
@@ -521,6 +578,9 @@
                     .attr('y', yScale(0))
                     .attr('width', xScale.bandwidth())
                     .attr('height', chartHeight - yScale(0))
+                    .on("mouseover", function(){return tooltip.style("visibility", "visible");})
+                    .on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "greentooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
+                    .on("mouseout", function(){return tooltip.style("visibility", "hidden");})
                 );
             }
             // resetArtistBars();
@@ -572,6 +632,8 @@
                         .duration(ANIMATION_DURATION)
                         .attr('y', yScale(word_year_totals[index]))
                         .attr('height', chartHeight - yScale(word_year_totals[index]))
+                    let count = word_year_totals[index];
+                    chartBars[index].on("mousemove", function(){return tooltip.attr("class", "greytooltip").style("top", (event.pageY-50)+"px").style("left",(event.pageX-50)+"px").text("Count: " + count);})
                 }
 
                 if (selectedArtist != "") {
@@ -591,6 +653,7 @@
                         .duration(ANIMATION_DURATION)
                         .attr('y', yScale(0))
                         .attr('height', chartHeight - yScale(0))
+                    chartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "greytooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
                 }
             }
 
@@ -614,6 +677,8 @@
                         .duration(ANIMATION_DURATION)
                         .attr('y', yScale(artist_year_counts[index]))
                         .attr('height', chartHeight - yScale(artist_year_counts[index]))
+                    let count = artist_year_counts[index];
+                    artistChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "greentooltip").style("left",(event.pageX-50)+"px").text("Count: " + count);})
                 }
             }
 
@@ -626,6 +691,7 @@
                         .duration(ANIMATION_DURATION)
                         .attr('y', yScale(0))
                         .attr('height', chartHeight - yScale(0))
+                    artistChartBars[index].on("mousemove", function(){return tooltip.style("top", (event.pageY-50)+"px").attr("class", "greentooltip").style("left",(event.pageX-50)+"px").text("Tooltip");})
                 }
             }
 
