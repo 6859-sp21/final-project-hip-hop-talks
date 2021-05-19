@@ -326,8 +326,7 @@
                         }
 
                         updateArtistTooltip();
-
-                        checkWord(currentWord);
+                        updateCircleSizes(currentWord);
 
                         // Generate the word sums list
                         let wordsums = {}
@@ -536,7 +535,7 @@
             }, function(error, rows){
                 console.log("Couldn't load the whole json maybe")
                 console.log(error); 
-            }).then(() => {drawBars(currentWord)});
+            }).then(() => {console.log("finished reading temporal data!"); drawBars(currentWord)});
 
             // Generate the chart svg
             let sizeInfo = document.getElementById("wordusage").getBoundingClientRect();
