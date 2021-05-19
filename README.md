@@ -1,7 +1,9 @@
 # Hip Hop Talks
 A visualization on the use of language in Hip Hop, created by **Yodahe Alemu** and **Joshua Verdejo**
 
-[Our Visualization](https://6859-sp21.github.io/final-project-hip-hop-talks/ "Final Project Visualization")
+[Our Page](https://6859-sp21.github.io/final-project-hip-hop-talks/ "Final Project Page")
+
+[Our Visualization](https://6859-sp21.github.io/final-project-hip-hop-talks/viz "Final Project Visualization")
 
 [Our Teaser Trailer](https://www.youtube.com/watch?v=mhb0A9T7sfc, "Hip Hop Talks Teaser")
 
@@ -12,7 +14,7 @@ Similar to our work breakdown for A4, we split the work such that Yodahe focused
 
 **Joshua** primarily handled the creation of our data sets. This included finding current online databases we could pull from, working with different web APIs to build our own unique dataset, parsing through any unnecessary data, and cleaning up the data for use with the website. Joshua also helped with the design of our visualization and it's main interactions, as well as doing final touches on the actual website.
 
-**Yodahe** primarily handled the development of the website visualizaiton. This included working with d3.js, building out the main interaction systems, creating the visualizations, and connecting the datasets to the website. Yodahe also helped with the design of our datasets and doing research of current online databses, as well as doing some touch ups to the datasets for the purposses of connecting them to the website.
+**Yodahe** primarily handled the development of the website visualizaiton. This included working with d3.js, building out the main interaction systems, creating the visualizations, and connecting the datasets to the website. Yodahe also helped with the design of our datasets and doing research of current online databses, as well as doing some touch ups to the datasets for the purposes of connecting them to the website.
 
 # Development Process Reflection
 
