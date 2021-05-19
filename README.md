@@ -2,6 +2,7 @@
 A visualization on the use of language in Hip Hop, created by **Yodahe Alemu** and **Joshua Verdejo**
 
 [Our Visualization](https://6859-sp21.github.io/final-project-hip-hop-talks/ "Final Project Visualization")
+
 [Our Teaser Trailer](https://www.youtube.com/watch?v=mhb0A9T7sfc, "Hip Hop Talks Teaser")
 
 [Our rationale for our A4 submission](https://github.com/6859-sp21/a4-hiphoptalks "A4 Rationale") which our final project was built on top of.
