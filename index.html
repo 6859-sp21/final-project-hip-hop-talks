@@ -213,6 +213,10 @@
             // Temporal Data
             var yearly_totals={};
             var yearly_artist_counts={};
+            for (var i = 1982; i <= 2021; i++) {
+                yearly_totals[i.toString()] = 0;
+                yearly_artist_counts[i.toString()] = {};
+            }
 
             // Testing if d3 works
             d3.select("#noword")
