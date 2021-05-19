@@ -533,6 +533,9 @@
                     let year = i.toString();
                     yearly_totals[year] = data[year];
                 }
+            }, function(error, rows){
+                console.log("Couldn't load the whole json maybe")
+                console.log(error); 
             }).then(() => {drawBars(currentWord)});
 
             // Generate the chart svg
